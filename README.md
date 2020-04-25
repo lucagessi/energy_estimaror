@@ -24,20 +24,22 @@ npm run lint
 See [Configuration Reference](https://cli.vuejs.org/config/).
 
 
-Tutorial from:
+### Tutorial from:
 https://www.cseyda.de/2019/04/21/how-to-start-an-electron-vue-typescript-project/
 Nota che se ci sono problemi per lanciare l'applicazione con npm run serve devi 
-togliere i valori dentro 
-tsconfig.json:
+togliere i valori dentro tsconfig.json:
+```
 ....
   "types": [
       "webpack-env"
     ],
 ....
+```
 e scrivere  
+```
 ....
   "types": [],
 ....
-
+```
 Inoltre come specificato nel link usa npm run electron:serve per lanciare electron. Per 
 creare l'applicativo finale non so.
