@@ -26,7 +26,7 @@ See [Configuration Reference](https://cli.vuejs.org/config/).
 
 ### Tutorial from:
 https://www.cseyda.de/2019/04/21/how-to-start-an-electron-vue-typescript-project/
-Nota che se ci sono problemi per lanciare l'applicazione con npm run serve devi 
+.Nota che se ci dovessero essere problemi per lanciare l'applicazione con npm run serve devi 
 togliere i valori dentro tsconfig.json:
 ```
 ....
