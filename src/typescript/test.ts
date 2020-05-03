@@ -1,6 +1,6 @@
 console.log('Inside test.ts');
 
-import {ConfigurableLoad, BasicLoadContainer,PhysicalLoad, ILoad} from './load';
+import {ConfigurableLoad, BasicLoadContainer,PhysicalLoad, ILoad, StateMachineLoad} from './load';
 
 var uC  : PhysicalLoad = new PhysicalLoad();
 var rf_module  : PhysicalLoad = new PhysicalLoad();
@@ -9,7 +9,9 @@ var led : PhysicalLoad = new PhysicalLoad();
 var stm32 :  ConfigurableLoad = new ConfigurableLoad();
 var redLed:  ConfigurableLoad = new ConfigurableLoad();
 var blueLed: ConfigurableLoad = new ConfigurableLoad();
+var blueLedOff: ConfigurableLoad = new ConfigurableLoad();
 var Ble:     ConfigurableLoad = new ConfigurableLoad();
+var MyStateMachine : StateMachineLoad = new StateMachineLoad();
 
 var group : BasicLoadContainer = new BasicLoadContainer();
 var pnt : ILoad;
@@ -30,6 +32,17 @@ group.add(stm32)
 group.add(redLed)
 group.add(blueLed)
 group.add(Ble)
+group.add(MyStateMachine)
+
+var RedLed_OnState :  ConfigurableLoad = new ConfigurableLoad(led,"On");
+var RedLed_OffState :  ConfigurableLoad = new ConfigurableLoad(led,"Off");
+
+MyStateMachine.addState({_load: RedLed_OnState, _duration : 0.5 })
+MyStateMachine.addState({_load: RedLed_OffState, _duration : 2 })
+
+//MyStateMachine.removeState({_load: RedLed_OnState, _duration : 0.5 })
+MyStateMachine.removeState(undefined,0,undefined)
+
 
 console.log(uC.serialize)
 
@@ -45,6 +58,7 @@ console.log("uC consumption: "+stm32.consumption)
 console.log("led consumption: "+redLed.consumption)
 
 console.log("group consumption: "+group.consumption)
+console.log("MyStateMachine consumption: "+MyStateMachine.consumption)
 pnt = group;
 console.log(pnt instanceof ConfigurableLoad)
 console.log(pnt instanceof BasicLoadContainer)

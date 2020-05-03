@@ -1,3 +1,5 @@
+type consumption = number;
+
 export interface serializable{
     //serialize : string;
     //deserialize(data : string) : void;
@@ -37,8 +39,6 @@ export interface ILoadConfig{
     key         : string;
     consumption : number;
 }
-
-
 
 export class PhysicalLoad{
 
@@ -122,11 +122,18 @@ export class ConfigurableLoad implements ILoad{
 
     private _load                : {} | PhysicalLoad;
     private _key                 : string;
-    constructor() {
-        this._load = {};
-        this._key = "";
+    constructor(load ?: PhysicalLoad, key ?: string) {
+        if( load !== undefined){
+            this._load = load;
+        }else{
+            this._load = {};
+        }
+        if( key !== undefined){
+            this._key = key;
+        }else{
+            this._key = "";
+        }
     }
-
     set load(load : PhysicalLoad){
         this._load = load;
     }
@@ -170,6 +177,55 @@ export class BasicLoadContainer implements ILoadContainer{
 
     remove(target : ILoad) : void{
         this._loads.splice(this._loads.indexOf(target),1)
+    }
+
+}
+
+export class StateMachineLoad implements IStateMachineLoad{
+
+    private _states : IStateMachineLoadState[];
+    private _period : number;
+    constructor() {
+        this._states = [];
+        this._period = 0;
+    }
+
+    addState   (state : IStateMachineLoadState) : void{
+        this._states.push(state);
+        this._period += state._duration;
+    }
+
+    removeState(state ?: IStateMachineLoadState, index ?: number, load ?: ILoad) : void{
+        if ( index !== undefined){
+            console.log("Type of state to remove is number")
+            if( index>=0 && index < this._states.length ){
+                this._period -= this._states[index]._duration
+                this._states.splice(index,1)
+            }
+        }
+        if ( state !== undefined){
+            this._states.forEach((element,index) => {
+                if ((element._load == state._load) && (element._duration == state._duration)){
+                    this._states.splice(index,1)
+                    this._period -= state._duration;
+                }
+            })
+        }
+        if( load !== undefined ){
+            this._states.forEach((element,index) => {
+                if ((element._load == load)){
+                    this._period -= element._duration;
+                    this._states.splice(index,1)
+                }
+            })            
+        }
+    }
+    get consumption() : number{
+        var total : number = 0;
+        this._states.forEach((element,index) => {
+            total += element._load.consumption * element._duration / this._period 
+        })
+        return total;
     }
 
 }
