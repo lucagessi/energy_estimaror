@@ -7,8 +7,7 @@ export interface ILoadContainer extends ILoad{
     removeLoad(target : ILoad) : void;
 }
 
-export interface IStateMachineLoadState{
-    _load     : ILoad;
+export interface IStateMachineLoadState extends ILoad{
     _duration : number; 
 }
 
@@ -85,7 +84,7 @@ export class ConfigurableLoad implements ILoad{
     }
 
     setConfiguration(key: string): boolean {
-        this._configurations.forEach(function (this : ConfigurableLoad,actual,index) {
+        this._configurations.forEach((actual,index) => {
             if (key == actual.key){
                 this._configuration = this._configurations[index];
                 this._key   = key;
@@ -110,6 +109,7 @@ export class ConfigurableLoad implements ILoad{
         });
         return success;
     }
+
     addConfiguration(config: ILoadConfig): boolean {
         var exists : boolean = false;
         this._configurations.forEach(function (this : ConfigurableLoad,actual,index) {
@@ -138,6 +138,36 @@ export class ConfigurableLoad implements ILoad{
             data.configurations.push(actual);
         });
         return data;
+    }
+
+}
+
+export class BasicLoadContainer implements ILoadContainer{
+
+    private _loads : ILoad[];
+
+    constructor() {
+        this._loads = [];
+    }
+
+    get consumption(){
+        var total : number = 0
+        this._loads.forEach(element => {
+            total += element.consumption
+        });
+        return total
+    }
+
+    addLoad(newLoad : ILoad) : void{
+        if (newLoad != this){
+            this._loads.push(newLoad)
+        }else{
+            console.error("BasicLoadContainer: Avoid adding self to group call")
+        }
+    }
+
+    removeLoad(target : ILoad) : void{
+        this._loads.slice(this._loads.indexOf(target),1)
     }
 
 }
