@@ -110,7 +110,7 @@ export class ConfigurableLoad implements ILoad{
         });
         return success;
     }
-    addConfiguration(config: LoadConfig): boolean {
+    addConfiguration(config: ILoadConfig): boolean {
         var exists : boolean = false;
         this._configurations.forEach(function (this : ConfigurableLoad,actual,index) {
             if (config.key == actual.key ){
@@ -121,7 +121,7 @@ export class ConfigurableLoad implements ILoad{
             return false;
         }else{
             this.configurations.push( 
-                new LoadConfig(config.key,config.consumption)
+                {key:config.key,consumption:config.consumption} 
             );
             return true;
         }
@@ -140,40 +140,4 @@ export class ConfigurableLoad implements ILoad{
         return data;
     }
 
-}
-
-export class LoadConfig {
-
-    private _key         : string;
-    private _consumption : number;
-
-    constructor(
-        key         : string,
-        consumption :  number
-    ) {
-        this._key = key;
-        this._consumption = consumption;
-    }
-
-    get key(): string {
-        return this._key;
-    }
-
-    get consumption(): number {
-        return this._consumption;
-    }
-
-    set key(key : string) {
-        this._key = key;
-    }
-
-    set consumption(consumption : number) {
-        this._consumption = consumption;
-    }
-    get serialize() : ILoadConfigStruct{
-        return {
-            key         : this._key,
-            consumption : this._consumption
-        }
-    }
 }
