@@ -1,13 +1,19 @@
-export interface ILoad{
+export interface serializable{
+    //serialize : string;
+    //deserialize(data : string) : void;
+}
+
+export interface ILoad extends serializable{
     consumption : number;
 }
 
 export interface ILoadContainer extends ILoad{
-    addLoad(newLoad : ILoad) : void;
-    removeLoad(target : ILoad) : void;
+    add(newLoad : ILoad) : void;
+    remove(target : ILoad) : void;
 }
 
-export interface IStateMachineLoadState extends ILoad{
+export interface IStateMachineLoadState{
+    _load     : ILoad;
     _duration : number; 
 }
 
@@ -18,9 +24,7 @@ export interface IStateMachineLoad extends ILoad{
 
 // Used for serialization
 export interface ILoadStruct{
-    key                 : string;
     name                : string;
-    isSet               : boolean;
     configurations      : ILoadConfigStruct[];   
 }
 
@@ -34,30 +38,19 @@ export interface ILoadConfig{
     consumption : number;
 }
 
-export class ConfigurableLoad implements ILoad{
+
+
+export class PhysicalLoad{
 
     private _configurations      : ILoadConfig[];
-    private _configuration      !: ILoadConfig;
-    private _key                 : string;
     private _name                : string;
-    private _isSet               : boolean;
     constructor() {
         this._configurations = [];
-        this._key = "";
-        this._isSet = false;
         this._name = "unknown";
     }
 
     get configurations(): ILoadConfig[] {
         return this._configurations;
-    }
-
-    get consumption() : number{
-        var value = 0
-        if (this._isSet){
-            value = this.getConfiguration(this._key).consumption
-        }
-        return value
     }
 
     get name(): string {
@@ -71,7 +64,7 @@ export class ConfigurableLoad implements ILoad{
     getConfiguration(key : string): ILoadConfig {
         var config : ILoadConfig = {key:"unknown",consumption:0};
 
-        this._configurations.forEach(function (this : ConfigurableLoad,actual) {
+        this._configurations.forEach((actual) => {
             if (key == actual.key){
                 config = actual;
             }
@@ -83,27 +76,12 @@ export class ConfigurableLoad implements ILoad{
         this._configurations = configurations;
     }
 
-    setConfiguration(key: string): boolean {
-        this._configurations.forEach((actual,index) => {
-            if (key == actual.key){
-                this._configuration = this._configurations[index];
-                this._key   = key;
-                this._isSet = true;
-                return true;
-            }
-        });
-        return false;
-    }
     removeConfiguration(key: string): boolean {
         var success : boolean = false;
         this._configurations.forEach( (config,index) => {
             if (config.key == key){
                 console.log(this);
                 this._configurations.splice(index,1);
-                if (this._key == key){
-                    this._isSet = false;
-                    this._key   = "";
-                }
                 success = true;
             }
         });
@@ -129,8 +107,6 @@ export class ConfigurableLoad implements ILoad{
 
     get serialize() : ILoadStruct{
         var data : ILoadStruct = {
-            isSet          : this._isSet,
-            key            : this._key,
             name           : this._name,
             configurations : []
         };
@@ -140,6 +116,32 @@ export class ConfigurableLoad implements ILoad{
         return data;
     }
 
+}
+
+export class ConfigurableLoad implements ILoad{
+
+    private _load                : {} | PhysicalLoad;
+    private _key                 : string;
+    constructor() {
+        this._load = {};
+        this._key = "";
+    }
+
+    set load(load : PhysicalLoad){
+        this._load = load;
+    }
+
+    get consumption() : number{
+        if (this._load instanceof PhysicalLoad){
+            return this._load.getConfiguration(this._key).consumption
+        }else{
+            return 0
+        }
+    }
+
+    setConfiguration(key: string): void {
+        this._key = key;
+    }
 }
 
 export class BasicLoadContainer implements ILoadContainer{
@@ -158,7 +160,7 @@ export class BasicLoadContainer implements ILoadContainer{
         return total
     }
 
-    addLoad(newLoad : ILoad) : void{
+    add(newLoad : ILoad) : void{
         if (newLoad != this){
             this._loads.push(newLoad)
         }else{
@@ -166,8 +168,8 @@ export class BasicLoadContainer implements ILoadContainer{
         }
     }
 
-    removeLoad(target : ILoad) : void{
-        this._loads.slice(this._loads.indexOf(target),1)
+    remove(target : ILoad) : void{
+        this._loads.splice(this._loads.indexOf(target),1)
     }
 
 }
